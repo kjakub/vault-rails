@@ -21,7 +21,7 @@ before_install:
 
 branches:
   only:
-    - rails-5-2
+    - master
 
 rvm:
   - 2.5.3
