@@ -1,4 +1,4 @@
-Vault Rails [![Build Status](https://travis-ci.org/kjakub/vault-rails.svg?branch=master)](https://travis-ci.org/kjakub/vault-rails.svg?branch=master)
+Vault Rails [![Build Status](https://travis-ci.org/kjakub/vault-rails.svg?branch=master)](https://travis-ci.org/github/kjakub/vault-rails)
 ===========
 
 Vault is the official Rails plugin for interacting with [Vault](https://vaultproject.io) by HashiCorp.
