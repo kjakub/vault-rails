@@ -90,7 +90,7 @@ vault_attribute :credit_card,
 - **Note** This value **cannot** be the same name as the vault attribute!
 
 #### Specifying a custom key
-By default, the name of the key in Vault is `#{app}_#{table}_#{column}`. This is customizable by setting the `:key` coption when declaring the attribute:
+By default, the name of the key in Vault is `#{app}_#{table}_#{column}`. This is customizable by setting the `:key` option when declaring the attribute:
 
 ```ruby
 vault_attribute :credit_card,
@@ -98,6 +98,51 @@ vault_attribute :credit_card,
 ```
 
 - **Note** Changing this value for an existing application will make existing values no longer decryptable!
+
+#### Specifying a context (key derivation)
+
+Vault Transit supports key derivation, which allows the same key to be used for multiple purposes by deriving a new key based on a context value.
+
+The context can be specified as a string, symbol, or proc. Symbols (an instance method on the model) and procs are called for each encryption or decryption request, and should return a string.
+
+- **Note** Changing the context or context generator for an attribute will make existing values no longer decryptable!
+
+##### String
+
+With a string, all records will use the same context for this attribute:
+
+```ruby
+vault_attribute :credit_card,
+  context: "user-cc"
+```
+
+##### Symbol
+
+When using a symbol, a method will be called on the record to compute the context:
+
+```ruby
+belongs_to :user
+
+vault_attribute :credit_card,
+  context: :encryption_context
+
+def encryption_context
+  "user_#{user.id}"
+end
+```
+
+##### Proc
+
+Given a proc, it will be called each time to compute the context:
+
+```ruby
+belongs_to :user
+
+vault_attribute :credit_card,
+  context: ->(record) { "user_#{record.user.id}" }
+```
+
+The proc must take a single argument for the record.
 
 #### Specifying a different Vault path
 By default, the path to the transit backend in Vault is `transit/`. This is customizable by setting the `:path` option when declaring the attribute:
@@ -113,7 +158,7 @@ vault_attribute :credit_card,
 By default, all values are assumed to be "text" fields in the database. Sometimes it is beneficial for your application to work with a more flexible data structure (such as a Hash or Array). Vault-rails can automatically serialize and deserialize these structures for you:
 
 ```ruby
-vault_attribute :details
+vault_attribute :details,
   serialize: :json
 ```
 
@@ -151,7 +196,7 @@ vault_attribute :address,
   decode: ->(raw) { raw.to_s }
 ```
 
-- **Note** Changing the algorithm for encoding/decoding for an existing application will probably make the application crash when attempting to retrive existing values!
+- **Note** Changing the algorithm for encoding/decoding for an existing application will probably make the application crash when attempting to retrieve existing values!
 
 Caveats
 -------

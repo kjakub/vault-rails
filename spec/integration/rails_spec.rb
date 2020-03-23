@@ -69,6 +69,16 @@ describe Vault::Rails do
       person.reload
 
       expect(person.ssn).to eq("")
+      expect(person.ssn_encrypted).to eq("")
+    end
+
+    it "allows attributes to be null" do
+      person = Person.create!(ssn: "123-45-6789")
+      person.update_attributes!(ssn: nil)
+      person.reload
+
+      expect(person.ssn).to eq(nil)
+      expect(person.ssn_encrypted).to eq(nil)
     end
 
     it "reloads instance variables on reload" do
@@ -353,6 +363,89 @@ describe Vault::Rails do
       expect(raw).to eq("xxxbluexxx")
 
       expect(person.favorite_color).to eq("blue")
+    end
+  end
+
+  context "with context" do
+    it "encodes and decodes with a string context" do
+      person = Person.create!(context_string: "foobar")
+      person.reload
+
+      raw = Vault::Rails.decrypt(
+        "transit", "dummy_people_context_string",
+        person.context_string_encrypted, context: "production")
+
+      expect(raw).to eq("foobar")
+
+      expect(person.context_string).to eq("foobar")
+
+      # Decrypting without the correct context fails
+      expect {
+        Vault::Rails.decrypt(
+          "transit", "dummy_people_context_string",
+          person.context_string_encrypted, context: "wrongcontext")
+      }.to raise_error(Vault::HTTPClientError, /invalid ciphertext/)
+
+      # Decrypting without a context fails
+      expect {
+        Vault::Rails.decrypt(
+          "transit", "dummy_people_context_string",
+          person.context_string_encrypted)
+      }.to raise_error(Vault::HTTPClientError, /context/)
+    end
+
+    it "encodes and decodes with a symbol context" do
+      person = Person.create!(context_symbol: "foobar")
+      person.reload
+
+      raw = Vault::Rails.decrypt(
+        "transit", "dummy_people_context_symbol",
+        person.context_symbol_encrypted, context: person.encryption_context)
+
+      expect(raw).to eq("foobar")
+
+      expect(person.context_symbol).to eq("foobar")
+
+      # Decrypting without the correct context fails
+      expect {
+        Vault::Rails.decrypt(
+          "transit", "dummy_people_context_symbol",
+          person.context_symbol_encrypted, context: "wrongcontext")
+      }.to raise_error(Vault::HTTPClientError, /invalid ciphertext/)
+
+      # Decrypting without a context fails
+      expect {
+        Vault::Rails.decrypt(
+          "transit", "dummy_people_context_symbol",
+          person.context_symbol_encrypted)
+      }.to raise_error(Vault::HTTPClientError, /context/)
+    end
+
+    it "encodes and decodes with a proc context" do
+      person = Person.create!(context_proc: "foobar")
+      person.reload
+
+      raw = Vault::Rails.decrypt(
+        "transit", "dummy_people_context_proc",
+        person.context_proc_encrypted, context: person.encryption_context)
+
+      expect(raw).to eq("foobar")
+
+      expect(person.context_proc).to eq("foobar")
+
+      # Decrypting without the correct context fails
+      expect {
+        Vault::Rails.decrypt(
+          "transit", "dummy_people_context_proc",
+          person.context_proc_encrypted, context: "wrongcontext")
+      }.to raise_error(Vault::HTTPClientError, /invalid ciphertext/)
+
+      # Decrypting without a context fails
+      expect {
+        Vault::Rails.decrypt(
+          "transit", "dummy_people_context_proc",
+          person.context_proc_encrypted)
+      }.to raise_error(Vault::HTTPClientError, /context/)
     end
   end
 
