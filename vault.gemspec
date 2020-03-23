@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "appraisal", "~> 2.1"
   s.add_development_dependency "bundler"
   s.add_development_dependency "pry"
-  s.add_development_dependency "rake",    "~> 10.0"
+  s.add_development_dependency "rake",    "~> 13.0.1"
   s.add_development_dependency "rspec",   "~> 3.2"
   s.add_development_dependency "sqlite3", "~> 1.4.2"
 end
