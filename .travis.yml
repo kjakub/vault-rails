@@ -19,7 +19,7 @@ branches:
 
 rvm:
   - 2.5.3
-  - 2.6.5
+  - 2.6.6
   
 before_script:
   - bundle exec rake app:db:create

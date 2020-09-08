@@ -12,6 +12,20 @@ describe Vault::Rails do
       Vault::Rails.logical.write("transit/keys/dummy_people_ssn")
     end
 
+    it "it wont track change if no change in NON encrypted attributes" do
+      person = Person.create!(name: "Jakub")
+      person.name = "Jakub"
+      person.save
+      expect(person.name_changed?).to be(false)
+    end
+
+    it "it wont track change if no change in encrypted attributes" do
+      person = Person.create!(ssn: "123")
+      person.ssn = "123"
+      person.save
+      expect(person.ssn_changed?).to be(false)
+    end
+
     it "encrypts attributes" do
       person = Person.create!(ssn: "123-45-6789")
       expect(person.ssn_encrypted).to be
